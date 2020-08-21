@@ -1,36 +1,38 @@
 #!/bin/bash
 
-# assumes the env variables are given:
-# ${mqtt_srv}
-# ${filename}
-# ${fid}
-# ${pipe_stdin_stdout}
-# ${sub_topic}
-# ${pub_topic}
-# ${args}
-# ${done_topic}
-# ${done_msg}
+# the env variables are given:
+# ${__mqtt_srv}
+# ${__store_url}
+# ${__name}
+# ${__filename}
+# ${__fid}
+# ${__pipe_stdin_stdout}
+# ${__sub_topic}
+# ${__pub_topic}
+# ${__args}
+# ${__done_topic}
+# ${__done_msg}
 
 wasmrt=/usr/local/bin/wasmer 
 wget=/usr/local/bin/wget
 mosquitto_pub=/usr/local/bin/mosquitto_pub
 mosquitto_sub=/usr/local/bin/mosquitto_sub
 
-work_dir=`mktemp -d`
+workdir=`mktemp -d`
 
-cd ${work_dir}
-${wget} --no-check-certificate "https://docs.google.com/uc?export=download&id=${fid}" -O ${filename}
-fn=$(basename -- "${work_dir}/${filename}")
+cd ${workdir}
+${wget} ${wget_options} ${wget_credentials} ${__store_url}/users/${__name}/${__filename} > /dev/null
+fn=$(basename -- "${__filename}")
 ext="${fn##*.}"
 fn="${fn%.*}"
 
-if [ "${pipe_stdin_stdout}" = "True" ]; then
-    echo "Running: ${wasmrt} ${filename} | ${pub_topic}"
-    ${wasmrt} ${filename} | ${mosquitto_pub} -h o${mqtt_srv} -t ${pub_topic} -l
+if [ "${__pipe_stdin_stdout}" = "True" ]; then
+    echo "Running: ${wasmrt} ${__filename} | ${__pub_topic}"
+    ${wasmrt} ${__filename} | ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
 else
-    echo "Running: ${wasmrt} ${filename} "
-    ${wasmrt} ${filename}
+    echo "Running: ${wasmrt} ${__filename} "
+    ${wasmrt} ${__filename}
 fi
 
 echo "Module done."
-${mosquitto_pub} -h ${mqtt_srv} -t ${done_topic} -m ${done_msg}
+${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m ${__done_msg}
