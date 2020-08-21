@@ -140,8 +140,8 @@ class ModulesControl():
             raise Exception('UUID {} not found'.format(module_uuid)) 
             
 class ModulesView():
-    def json_item_list(self, item_list):
-        return json.dumps(item_list)
+    def json_item_list(self, modules_ctl):
+        return json.dumps(modules_ctl.modules)
                     
     def json_graph_item(self, module, action):
         return json.dumps({'uuid': str(module.uuid), 'name': module.name, 'action': action, 'data': { 'type': module.type, 'parent': module.parent, 'filename': module.filename, 'fileid': module.fileid, 'filetype': module.filetype, 'args': module.args}})

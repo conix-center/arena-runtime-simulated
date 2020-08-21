@@ -67,11 +67,9 @@ class Runtime(dict):
     @reg_topic.setter
     def reg_topic(self, reg_topic):    
         self['reg_topic'] = reg_topic
-
+        
         
 class RuntimeView():
-    def json_item_list(self, item_list):
-        return json.dumps(item_list)
                     
     # utility function to return a register message
     def json_reg(self, reg_uuid, runtime):

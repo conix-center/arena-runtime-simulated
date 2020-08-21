@@ -8,11 +8,6 @@ import time
 import json
 import signal
 import atexit    
-# conditional import for runnig standalone
-try:
-    import runtimemngr.settings as settings
-except ImportError:
-    import settings
 
 class FileType():   
     WA = 'WASM'
@@ -113,51 +108,3 @@ class ModuleLaucher():
         t = threading.Thread(target=self._run_thread, args=(cmd, env, module.uuid))
         t.start()
         
-# run standalone (for simple testing)
-def main():
-    m = ModuleLaucher()
-        
-    settings.load()
-
-    class Module(object): pass
-    mod = Module()
-    mod.uuid='18881342-4111-488d-9301-064ad9b4d39a'
-    mod.name='npereira/pytest'
-    mod.filename='test.py'
-    mod.fileid='fid'
-    mod.filetype='PY'
-    mod.args='test'
-    mod.env='ENV_VAR1=1 ENV_VAR2=2'
-
-    try:
-        m.run(mod, 'realm/proc/debug', 'realm/proc/stdout/', '')
-    except Exception as err:
-        print(err)
-        
-    time.sleep(5)
-    
-    mod1 = Module()
-    mod1.uuid='18881342-4111-488d-9301-064ad9b4d39b'
-    mod1.name='npereira/pytest'
-    mod1.filename='test.py'
-    mod1.fileid='fid'
-    mod1.filetype='PY'
-    mod1.args='test'
-    mod1.env='ENV_VAR1=1 ENV_VAR2=2'
-
-    try:
-        m.run(mod1, 'realm/proc/debug', 'realm/proc/stdout/', '')
-    except Exception as err:
-        print(err)
-
-    time.sleep(5)
-    
-    print('killing: ', mod.uuid)
-    m.kill(mod.uuid)
-        
-    while m.isAllDone()==False:
-        time.sleep(1)
-
-if __name__ == "__main__":
-    
-    main()

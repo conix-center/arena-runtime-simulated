@@ -5,29 +5,24 @@ import json
 import uuid
 import time
 
-import runtimemngr.settings as settings
 from runtimemngr.runtime import RuntimeView
 from runtimemngr.msgdefs import Action, Result, ARTSResponse
-from runtimemngr.modules import ModulesControl, ModulesView
 
 
 class MqttManager(mqtt.Client):
 
-    def __init__(self, rt):
+    def __init__(self, settings, rt, modules):
         super(MqttManager, self).__init__(str(rt.uuid))
         self.runtime = rt 
         self.reg_attempts = 0
         
-        # parse settings
-        for t in settings.s_dict['topics']:
-            if (t['type'] == 'reg'):
-                self.reg_topic = self.runtime.reg_topic = t['topic']
-            if (t['type'] == 'ctl'):
-                self.ctl_topic = self.runtime.ctl_topic = t['topic']
-            if (t['type'] == 'dbg'):
-                self.dbg_topic = self.runtime.dbg_topic = t['topic']
+        # save settings
+        self.settings = settings
+        self.reg_topic = settings.reg_topic
+        self.ctl_topic = settings.ctl_topic
+        self.dbg_topic = settings.dbg_topic
 
-        self.modules = ModulesControl(rt)
+        self.modules = modules
         
     def wait_timeout(self, tevent, stime, callback):
         print('****waiting')
@@ -49,8 +44,8 @@ class MqttManager(mqtt.Client):
         print('Registering: ', reg_msg)
         self.publish(self.reg_topic, reg_msg)
         self.reg_attempts += 1
-        if (settings.s_dict['runtime']['reg_attempts'] == 0 or settings.s_dict['runtime']['reg_attempts'] > self.reg_attempts):        
-            self.reg_done = self.set_timeout(settings.s_dict['runtime']['reg_timeout_seconds'], self.register_rt)
+        if (self.settings.s_dict['runtime']['reg_attempts'] == 0 or self.settings.s_dict['runtime']['reg_attempts'] > self.reg_attempts):        
+            self.reg_done = self.set_timeout(self.settings.s_dict['runtime']['reg_timeout_seconds'], self.register_rt)
     
     def on_connect(self, mqttc, obj, flags, rc):
         print('registering runtime')         
