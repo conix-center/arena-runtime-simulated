@@ -1,7 +1,7 @@
 import time
 
-import runtimemngr.settings as settings
 from runtimemngr.mqttmng import MqttManager
+import runtimemngr.settings as settings
 from runtimemngr.runtime import Runtime
 
 def main():

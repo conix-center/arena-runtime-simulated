@@ -9,24 +9,25 @@ import runtimemngr.settings as settings
 from runtimemngr.runtime import RuntimeView
 from runtimemngr.msgdefs import Action, Result, ARTSResponse
 from runtimemngr.modules import ModulesControl, ModulesView
-from runtimemngr.launcher import ModuleLaucher
+
 
 class MqttManager(mqtt.Client):
 
     def __init__(self, rt):
         super(MqttManager, self).__init__(str(rt.uuid))
         self.runtime = rt 
-        self.Modules = ModulesControl(rt)
         self.reg_attempts = 0
         
         # parse settings
         for t in settings.s_dict['topics']:
             if (t['type'] == 'reg'):
-                self.reg_topic = t['topic']
+                self.reg_topic = self.runtime.reg_topic = t['topic']
             if (t['type'] == 'ctl'):
-                self.ctl_topic = t['topic']
+                self.ctl_topic = self.runtime.ctl_topic = t['topic']
             if (t['type'] == 'dbg'):
-                self.dbg_topic = t['topic']
+                self.dbg_topic = self.runtime.dbg_topic = t['topic']
+
+        self.modules = ModulesControl(rt)
         
     def wait_timeout(self, tevent, stime, callback):
         print('****waiting')
@@ -44,20 +45,20 @@ class MqttManager(mqtt.Client):
     def register_rt(self):
         # this will use the current runtime uuid as the object id
         self.reg_uuid = uuid.uuid4()
-        reg_msg = RuntimeView().json_reg(self.reg_uuid, self.runtime, Action.create)
+        reg_msg = RuntimeView().json_reg(self.reg_uuid, self.runtime)
         print('Registering: ', reg_msg)
         self.publish(self.reg_topic, reg_msg)
         self.reg_attempts += 1
         if (settings.s_dict['runtime']['reg_attempts'] == 0 or settings.s_dict['runtime']['reg_attempts'] > self.reg_attempts):        
             self.reg_done = self.set_timeout(settings.s_dict['runtime']['reg_timeout_seconds'], self.register_rt)
-
+    
     def on_connect(self, mqttc, obj, flags, rc):
         print('registering runtime')         
         try: 
             self.register_rt()
         except Exception as err:
             print(err)
-        
+    
     def on_message(self, mqttc, obj, msg):
         print(msg.topic+" "+str(msg.qos)+" "+str(msg.payload))
         
@@ -89,12 +90,6 @@ class MqttManager(mqtt.Client):
             # cancel timeout; will not retry reg again
             self.reg_done.set()
             
-            try:
-                rcv_rt_instance = json.loads(reg_msg['data']['details'])
-            except Exception as err:
-                print('Error parsing message to reg:', err)
-                return
-
             # unsubscribe from reg topic and subscribe to ctl/runtime_uuid
             self.unsubscribe(self.reg_topic)
             self.ctl_topic += '/' + str(self.runtime.uuid)
@@ -108,28 +103,19 @@ class MqttManager(mqtt.Client):
                 print('Error parsing message to ctl:', err)
                 return
             
-            # {"object_id": "3f02c335-f66a-4322-b748-e44ef50b3d43", "action": "create", "type": "arts_req", "data": {"type": "module", "details": "{\"uuid\": \"59484356-038c-4b09-af0f-7cdda72d238d\", \"name\": \"module1\", \"parent\": '60f6c17d-48b7-4919-b5f1-571c62b4a55b", \"filename\": \"test.wasm\", \"args\": \"\"}"}
+            #print(ctl_msg)
+            
             if (ctl_msg['type'] == 'arts_req'):
+                # module create
+                # example msg:
+                #   { "object_id": "f9f33440-4cb7-47a2-bcd2-0ddcac362dae", "action": "create", "type": "arts_req", "data": { "type": "module", "name": "npereira/pytest", "filename": "test.py", "fileid": "na", "filetype": "PY", "args": "", "env": "", "channels": "" }
                 if (ctl_msg['action'] == 'create' and ctl_msg['data']['type'] == 'module'):
-                    try:
-                        rcv_mod_instance = json.loads(ctl_msg['data']['details'])
-                    except Exception as err:
-                        print('Error parsing message to ctl:', err)
-                        return  
-
-                    print("rcv_mod_instance: ", rcv_mod_instance)
+                    mod_data = ctl_msg['data']
+                    #print("mod_data: ", mod_data)
                           
                     try:            
-                        print("1")
-                        print(rcv_mod_instance['uuid'])
-                        mod = self.Modules.create(rcv_mod_instance['uuid'],rcv_mod_instance['name'], rcv_mod_instance['filename'],rcv_mod_instance['fileid'],rcv_mod_instance['filetype'],rcv_mod_instance['args'])
-                        print("2")
-                        m = ModuleLaucher()
-                        print("3")
-                        delete_req_json = ModulesView().json_req(mod, Action.delete) 
-                        print("4")
-                        m.run(mod, self.dbg_topic, self.reg_topic, delete_req_json)
-                        print("5")
+                        ## missing mandatory fields will cause an exception
+                        mod = self.modules.create(mod_data['uuid'], mod_data['name'], mod_data['filename'], mod_data.get('fileid', ''),mod_data['filetype'],mod_data.get('args', ''), mod_data.get('env', ''))
                     except Exception as err:
                         print('Error creating new module:', err)                        
                         resp = ARTSResponse(ctl_msg['object_id'],Result.err, 'Module could not be created; {1}'.format(err))
@@ -137,8 +123,22 @@ class MqttManager(mqtt.Client):
                         return                      
 
                     print('Sending Confirmation!')
-                    resp = ARTSResponse(ctl_msg['object_id'],Result.ok, json.dumps(str(mod)))
+                    resp = ARTSResponse(ctl_msg['object_id'],Result.ok, json.dumps(mod))
                     self.publish(self.ctl_topic, json.dumps(resp))
+
+                # module delete
+                if (ctl_msg['action'] == 'delete' and ctl_msg['data']['type'] == 'module'):
+                    mod_data = ctl_msg['data']
+                    try:
+                        self.modules.delete(mod_data['uuid'])
+                    except Exception as err:
+                        print('Error deleting module:', err)                        
+                        resp = ARTSResponse(ctl_msg['object_id'],Result.err, 'Module could not be deleted; {1}'.format(err))
+                        self.publish(self.ctl_topic, json.dumps(resp))
+                        return                      
+                    print('Sending Confirmation!')
+                    resp = ARTSResponse(ctl_msg['object_id'],Result.ok, { "msg": "Deleted.", "uuid" : mod_data['uuid'] })
+                    self.publish(self.ctl_topic, json.dumps(resp))                    
         
     def on_publish(self, mqttc, obj, mid):
         print("mid: "+str(mid))
@@ -152,7 +152,7 @@ class MqttManager(mqtt.Client):
     def start(self, host):
         print('Connecting to:', host)
         # register last will
-        self.will_set(self.reg_topic, str(RuntimeView().json_reg(uuid.uuid4(), self.runtime, Action.delete)), 0, False)        
+        self.will_set(self.reg_topic, str(RuntimeView().json_unreg(uuid.uuid4(), self.runtime)), 0, False)        
         self.connect(host, 1883, 60)    
         # subscribe to reg topic     
         self.subscribe(self.reg_topic)
