@@ -1,4 +1,8 @@
 FROM python:3
+RUN apt-get update
+RUN apt-get install -y wget mosquitto-clients
+RUN pip install --upgrade pip
+RUN pip install virtualenv
 
 WORKDIR /usr/src/app
 COPY . .

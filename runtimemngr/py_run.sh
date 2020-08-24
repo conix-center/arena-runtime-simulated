@@ -13,12 +13,13 @@
 # ${__done_topic}
 # ${__done_msg}
 
-python3=/usr/local/bin/python3 
-pip=/usr/local/bin/pip3
-wget=/usr/local/bin/wget
-mosquitto_pub=/usr/local/bin/mosquitto_pub
-mosquitto_sub=/usr/local/bin/mosquitto_sub
+python3=`which python3` 
+pip=`which pip3` 
+wget=`which wget` 
+mosquitto_pub=`which mosquitto_pub`
+mosquitto_sub=`which mosquitto_sub`
 workdir=`mktemp -d`
+virtualenv=`which virtualenv`
 
 wget_options='-q -r -nH --cut-dirs=4 --no-parent --reject="index.html*"'
 wget_credentials='--user=devtest --password=dev#test20'
@@ -30,7 +31,7 @@ fn=$(basename -- "${__filename}")
 ext="${fn##*.}"
 fn="${fn%.*}"
 
-test -d venv || virtualenv venv
+test -d venv || ${virtualenv} venv
 . venv/bin/activate
 
 if [ "$ext" = "zip" ]; then
@@ -41,7 +42,7 @@ ${pip} install -Ur requirements.txt
 
 if [ "${__pipe_stdin_stdout}" = "True" ]; then
      echo "Running: ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | ${python3} -u ${__filename} ${__args} | ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l"
-     ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | { exec ${python3} -u ${__filename} ${__args}; pkill -g 0; } | ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
+     ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | { exec ${python3} -u ${__filename} ${__args}; pkill -g 0; } |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
 else
     echo "Running: ${python3} ${__filename}"
     ${python3} ${__filename} ${__args} 
