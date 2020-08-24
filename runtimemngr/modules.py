@@ -99,7 +99,7 @@ class ModulesControl():
             module = Module(module_uuid, module_name, self.parent, fn, fid, ft, args, env)
             self.modules.append(Module(module_uuid, module_name))
             delMsg = ModulesView().json_req(module, Action.delete) 
-            try:
+            try:                
                 self.moduleLauncher.run(module, self.parent.dbg_topic, self.parent.ctl_topic, delMsg)
             except Exception as e:
                 self.delete(module.uuid, False)

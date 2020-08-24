@@ -17,7 +17,7 @@ def run(rt, mod):
     global g_modules
     g_runtime = rt
     g_modules = mod
-    app.run()
+    app.run(host= '0.0.0.0')
     
 @app.route('/')
 def index():

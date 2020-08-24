@@ -9,6 +9,8 @@ import json
 import signal
 import atexit    
 
+from runtimemngr.settings import Settings
+
 class FileType():   
     WA = 'WASM'
     PY = 'PY'
@@ -71,7 +73,7 @@ class ModuleLaucher():
             raise Exception("Module already running (duplicate uuid)") 
             
         if (module.filetype == FileType.PY):
-            cmd.append(settings.s_dict['runtime']['py_launcher_path']) 
+            cmd.append(Settings.s_dict['runtime']['py_launcher_path']) 
         else:
             raise Exception("We only support python files") 
         #elif (module.filetype == FileType.WA):
@@ -82,9 +84,9 @@ class ModuleLaucher():
 
         # start our variables with __ so they do not collide with module's variables
         env = { 
-                '__mqtt_srv' : shlex.quote(settings.s_dict['mqtt_server']['host']), 
+                '__mqtt_srv' : shlex.quote(Settings.s_dict['mqtt_server']['host']), 
                 '__name': shlex.quote(module.name),
-                '__store_url': shlex.quote(settings.s_dict['store_url']),
+                '__store_url': shlex.quote(Settings.s_dict['store_url']),
                 '__filename': shlex.quote(module.filename), 
                 '__fid': shlex.quote(module.fileid), 
                 '__pipe_stdin_stdout': 'True', 

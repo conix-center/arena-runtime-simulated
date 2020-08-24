@@ -10,18 +10,18 @@ from runtimemngr.modules import ModulesControl
 CFG_FILE = 'config.json'
 
 def main():
-    # read settings
-    settings = Settings(CFG_FILE)
+    # load settings from json file
+    Settings.load()
 
     # create runtime
-    rt = Runtime(rt_name=settings.s_dict['runtime']['name'], rt_max_nmodules=settings.s_dict['runtime']['max_nmodules'], rt_apis=settings.s_dict['runtime']['apis'])
+    rt = Runtime(rt_name=Settings.s_dict['runtime']['name'], rt_max_nmodules=Settings.s_dict['runtime']['max_nmodules'], rt_apis=Settings.s_dict['runtime']['apis'], rt_dbg_topic=Settings.dbg_topic, rt_ctl_topic=Settings.ctl_topic)
     
     # create module ctl
     modules = ModulesControl(rt)
     
     # create and start mqtt client
-    mqttc = MqttManager(settings, rt, modules)
-    mqttc.start(settings.s_dict['mqtt_server']['host'])    
+    mqttc = MqttManager(Settings, rt, modules)
+    mqttc.start(Settings.s_dict['mqtt_server']['host'])    
 
     # create flask app
     HttpStatus.run(rt, modules)

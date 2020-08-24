@@ -1,15 +1,22 @@
 import json
 
+CFG_FILE = 'config.json'
+
 class Settings():
+    s_dict = {}    
+    reg_topic = ''
+    ctl_topic = ''
+    dbg_topic = ''
+    
+    @staticmethod
+    def load():
+        with open(CFG_FILE) as json_data_file:
+            Settings.s_dict = json.load(json_data_file)
 
-    def __init__(self, cfg_file):
-        with open(cfg_file) as json_data_file:
-            self.s_dict = json.load(json_data_file)
-
-        for t in self.s_dict['topics']:
+        for t in Settings.s_dict['topics']:
             if (t['type'] == 'reg'):
-                self.reg_topic = t['topic']
+                Settings.reg_topic = t['topic']
             if (t['type'] == 'ctl'):
-                self.ctl_topic = t['topic']
+                Settings.ctl_topic = t['topic']
             if (t['type'] == 'dbg'):
-                self.dbg_topic = t['topic']        
+                Settings.dbg_topic = t['topic']        
