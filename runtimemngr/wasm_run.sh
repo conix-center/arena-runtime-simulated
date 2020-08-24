@@ -13,10 +13,10 @@
 # ${__done_topic}
 # ${__done_msg}
 
-wasmrt=/usr/local/bin/wasmer 
-wget=/usr/local/bin/wget
-mosquitto_pub=/usr/local/bin/mosquitto_pub
-mosquitto_sub=/usr/local/bin/mosquitto_sub
+wasmrt=`which wasmer`
+wget=`which wget`
+mosquitto_pub=`which mosquitto_pub`
+mosquitto_sub=`which mosquitto_sub`
 
 workdir=`mktemp -d`
 
