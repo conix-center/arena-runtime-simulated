@@ -3,7 +3,7 @@
 		"host": "spatial.andrew.cmu.edu"
 	},
 	"runtime": {
-		"name": "runtime1",
+		"name": "py-runtime",
 		"reg_attempts": 0,
 		"reg_timeout_seconds": 5,
 		"max_nmodules": 100,
