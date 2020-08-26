@@ -7,7 +7,7 @@
 		"reg_attempts": 0,
 		"reg_timeout_seconds": 5,
 		"max_nmodules": 100,
-		"apis": ["python:python3"],
+		"apis": "python:python3",
 		"py_launcher_path": "runtimemngr/py_run.sh",
 		"wasm_launcher_path": "runtimemngr/wasm_run.sh"
 	},

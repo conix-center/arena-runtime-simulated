@@ -9,7 +9,7 @@ import uuid
 
 class Runtime(dict):
     type = Type.rt
-    def __init__(self, rt_name, rt_uuid=str(uuid.uuid4()), rt_max_nmodules=100, rt_apis=['wasi:snapshot_preview1', 'python:python3'], rt_dbg_topic='realm/proc/debug', rt_ctl_topic='realm/proc/control'):
+    def __init__(self, rt_name, rt_uuid=str(uuid.uuid4()), rt_max_nmodules=100, rt_apis='wasi:snapshot_preview1 python:python3', rt_dbg_topic='realm/proc/debug', rt_ctl_topic='realm/proc/control'):
         dict.__init__(self, uuid=rt_uuid, name=rt_name, max_nmodules=rt_max_nmodules, apis=rt_apis, dbg_topic=rt_dbg_topic, ctl_topic=rt_ctl_topic)
 
     @property
