@@ -92,7 +92,7 @@ class ModuleLaucher():
                 '__pipe_stdin_stdout': 'True', 
                 '__sub_topic': shlex.quote(stdin_topic),
                 '__pub_topic': shlex.quote(stdout_topic),
-                '__args': shlex.quote(module.args),
+                '__args': module.args,
                 '__env': shlex.quote(module.env),
                 '__done_topic': shlex.quote(rt_ctl_topic+"/"+module.uuid),
                 '__done_msg': shlex.quote(done_msg)}
