@@ -44,8 +44,8 @@ fi
 ${pip} install -Ur requirements.txt
 
 if [ "${__pipe_stdin_stdout}" = "True" ]; then
-     echo "Running: ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | { exec ${python3} -u ${__filename} ${__args}; pkill -g 0; } |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l"
-     ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | { exec ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; } |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
+     echo "Running: ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | ( ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; ) |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l"
+     ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | ( ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; ) |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
 else
     echo "Running: ${python3} ${__filename}"
     ${python3} ${__filename} ${__args}
