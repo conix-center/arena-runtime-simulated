@@ -18,7 +18,10 @@ pip=`which pip3`
 wget=`which wget` 
 mosquitto_pub=`which mosquitto_pub`
 mosquitto_sub=`which mosquitto_sub`
-workdir=`mktemp -d`
+if [ -z "$workdir" ]
+then
+      workdir=`mktemp -d`
+fi
 virtualenv=`which virtualenv`
 
 wget_options='-q -r -nH --cut-dirs=4 --no-parent --reject="index.html*"'
@@ -48,7 +51,7 @@ else
     ${python3} ${__filename} ${__args} 
 fi
 
-echo "Module done. -t ${__done_topic} -m ${__done_msg}"
+echo "Module done. -t ${__done_topic} -m ${__done_msg}" |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
 
 ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"
 
