@@ -95,7 +95,7 @@ class ModuleLaucher():
                 '__pub_topic': shlex.quote(stdout_topic),
                 '__args': module.args,
                 '__env': shlex.quote(module.env),
-                '__done_topic': shlex.quote(rt_ctl_topic+"/"+module.uuid),
+                '__done_topic': shlex.quote(rt_ctl_topic),
                 '__done_msg': shlex.quote(done_msg)}
 
         if (module.env.find(' ') != -1):
