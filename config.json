@@ -16,5 +16,5 @@
 		{ "topic": "realm/proc/control", "type": "ctl"},
 		{ "topic": "realm/proc/debug", "type": "dbg"}
 	],
-	"store_url": "https://spatial.andrew.cmu.edu:4443/store"
+	"store_url": "https://spatial.andrew.cmu.edu/store"
 }
