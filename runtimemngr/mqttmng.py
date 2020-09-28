@@ -4,6 +4,7 @@ import threading
 import json 
 import uuid
 import time
+import sys
 
 from runtimemngr.runtime import RuntimeView
 from runtimemngr.msgdefs import Action, Result, ARTSResponse
@@ -144,6 +145,9 @@ class MqttManager(mqtt.Client):
     def on_log(self, mqttc, obj, level, string):
         print(string)
 
+    def on_disconnect(client, userdata, rc):
+        sys.exit("## MQTT Disconnected. Exiting.")
+    
     def start(self, host):
         print('Connecting to:', host)
         # register last will

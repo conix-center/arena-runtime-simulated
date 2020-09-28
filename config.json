@@ -1,6 +1,6 @@
 {
 	"mqtt_server": {
-		"host": "spatial.andrew.cmu.edu"
+		"host": "arena.andrew.cmu.edu"
 	},
 	"runtime": {
 		"name": "py-runtime",
@@ -16,5 +16,5 @@
 		{ "topic": "realm/proc/control", "type": "ctl"},
 		{ "topic": "realm/proc/debug", "type": "dbg"}
 	],
-	"store_url": "https://spatial.andrew.cmu.edu/store"
+	"store_url": "https://arena.andrew.cmu.edu/store"
 }
