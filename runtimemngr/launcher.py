@@ -7,14 +7,14 @@ import threading
 import time
 import json
 import signal
-import atexit    
+import atexit
 
 from runtimemngr.settings import Settings
 
-class FileType():   
+class FileType():
     WA = 'WASM'
     PY = 'PY'
-    
+
 class ModuleLaucher():
 
     def __init__(self):
@@ -30,6 +30,7 @@ class ModuleLaucher():
         self.lock.release()
         while (1) :
             ret = proc.poll()
+            time.sleep(5) # TODO: asyncio module for an asynchronous wait
             if (ret):
                 # process terminated
                 self.lock.acquire()
@@ -65,17 +66,17 @@ class ModuleLaucher():
         r = self.allDone
         self.lock.release()
         return r
-        
+
     def run(self, module, rt_dbg_topic, rt_ctl_topic, done_msg):
         cmd = []
-        
+
         if module.uuid in self.proclist.keys():
-            raise Exception("Module already running (duplicate uuid)") 
-            
+            raise Exception("Module already running (duplicate uuid)")
+
         if (module.filetype == FileType.PY):
-            cmd.append(Settings.s_dict['runtime']['py_launcher_path']) 
+            cmd.append(Settings.s_dict['runtime']['py_launcher_path'])
         else:
-            raise Exception("We only support python files") 
+            raise Exception("We only support python files")
         #elif (module.filetype == FileType.WA):
         #    cmd.append(settings.s_dict['runtime']['wasm_launcher_path'])
 
@@ -83,30 +84,29 @@ class ModuleLaucher():
         stdout_topic = rt_dbg_topic+'/stdout/'+module.uuid
 
         # start our variables with __ so they do not collide with module's variables
-        env = { 
-                '__mqtt_srv' : shlex.quote(Settings.s_dict['mqtt_server']['host']), 
+        env = {
+                '__mqtt_srv' : shlex.quote(Settings.s_dict['mqtt_server']['host']),
                 '__name': shlex.quote(module.name),
                 '__store_url': shlex.quote(Settings.s_dict['store_url']),
-                '__filename': shlex.quote(module.filename), 
-                '__fid': shlex.quote(module.fileid), 
-                '__pipe_stdin_stdout': 'True', 
+                '__filename': shlex.quote(module.filename),
+                '__fid': shlex.quote(module.fileid),
+                '__pipe_stdin_stdout': 'True',
                 '__sub_topic': shlex.quote(stdin_topic),
                 '__pub_topic': shlex.quote(stdout_topic),
                 '__args': module.args,
                 '__env': shlex.quote(module.env),
-                '__done_topic': shlex.quote(rt_ctl_topic+"/"+module.uuid),
+                '__done_topic': shlex.quote(rt_ctl_topic),
                 '__done_msg': shlex.quote(done_msg)}
 
-        if (module.env.find(' ') != -1): 
+        if (module.env.find(' ') != -1):
             for vstr in module.env.split(" "):
                 v = vstr.split("=")
                 env[v[0]]=v[1]
         elif (module.env.find('=') != -1):
             module.env = vstr.split("=")
-            env[v[0]]=v[1]   
-            
+            env[v[0]]=v[1]
+
         print('env=',env)
         print('cmd=',cmd)
         t = threading.Thread(target=self._run_thread, args=(cmd, env, module.uuid))
         t.start()
-        
