@@ -28,7 +28,7 @@ fi
 virtualenv=`which virtualenv`
 
 wget_options='-q -r -nH --cut-dirs=4 --no-parent --reject="index.html*"'
-wget_credentials='--user=devtest --password=dev#test20'
+wget_credentials=''
 
 cd ${workdir}
 
