@@ -2,6 +2,9 @@
 
 # the env variables are given:
 # ${__mqtt_srv}
+# ${__mqtt_port}
+# ${__mqtt_un}
+# ${__mqtt_pw}
 # ${__store_url}
 # ${__name}
 # ${__filename}
@@ -44,15 +47,15 @@ fi
 ${pip} install -Ur requirements.txt
 
 if [ "${__pipe_stdin_stdout}" = "True" ]; then
-     echo "Running: ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | ( ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; ) |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l"
-     ${mosquitto_sub} -h ${__mqtt_srv} -t ${__sub_topic} | ( ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; ) |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
+     echo "Running: ${mosquitto_sub} -h ${__mqtt_srv} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -t ${__sub_topic} | ( ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; ) |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l"
+     ${mosquitto_sub} -h ${__mqtt_srv} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -t ${__sub_topic} | ( ${python3} -u ${__filename} ${__args}; echo "Module exited."; ${mosquitto_pub} -h ${__mqtt_srv} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -t ${__done_topic} -m "${__done_msg}"; sleep 1; pkill -g 0; ) |& ${mosquitto_pub} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -h ${__mqtt_srv} -t ${__pub_topic} -l
 else
     echo "Running: ${python3} ${__filename}"
     ${python3} ${__filename} ${__args}
 
-    echo "Module exited. -t ${__done_topic} -m ${__done_msg}" |& ${mosquitto_pub} -h ${__mqtt_srv} -t ${__pub_topic} -l
+    echo "Module exited. -t ${__done_topic} -m ${__done_msg}" |& ${mosquitto_pub} -h ${__mqtt_srv} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -t ${__pub_topic} -l
 
-    ${mosquitto_pub} -h ${__mqtt_srv} -t ${__done_topic} -m "${__done_msg}"
+    ${mosquitto_pub} -h ${__mqtt_srv} -p ${__mqtt_prt} -u ${__mqtt_un} -P ${__mqtt_pw} -t ${__done_topic} -m "${__done_msg}"
 fi
 
 

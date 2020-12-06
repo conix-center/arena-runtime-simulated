@@ -86,6 +86,9 @@ class ModuleLaucher():
         # start our variables with __ so they do not collide with module's variables
         env = {
                 '__mqtt_srv' : shlex.quote(Settings.s_dict['mqtt_server']['host']),
+                '__mqtt_prt' : shlex.quote(Settings.s_dict['mqtt_server']['port']),
+                '__mqtt_un' : shlex.quote(Settings.s_dict['mqtt_server']['username']),
+                '__mqtt_pw' : shlex.quote(Settings.s_dict['mqtt_server']['password']),
                 '__name': shlex.quote(module.name),
                 '__store_url': shlex.quote(Settings.s_dict['store_url']),
                 '__filename': shlex.quote(module.filename),
