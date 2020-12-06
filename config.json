@@ -1,6 +1,9 @@
 {
 	"mqtt_server": {
-		"host": "arena.andrew.cmu.edu"
+		"host": "arena.andrew.cmu.edu",
+	 	"port": 8883,
+		"username": "",
+    "password": ""
 	},
 	"runtime": {
 		"name": "py-runtime",
