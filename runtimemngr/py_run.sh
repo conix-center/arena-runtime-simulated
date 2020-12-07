@@ -2,7 +2,7 @@
 
 # the env variables are given:
 # ${__mqtt_srv}
-# ${__mqtt_port}
+# ${__mqtt_prt}
 # ${__mqtt_un}
 # ${__mqtt_pw}
 # ${__store_url}
@@ -15,7 +15,6 @@
 # ${__args}
 # ${__done_topic}
 # ${__done_msg}
-
 python3=`which python3`
 pip=`which pip3`
 wget=`which wget`
@@ -27,15 +26,18 @@ then
 fi
 virtualenv=`which virtualenv`
 
-wget_options='-q -r -nH --cut-dirs=4 --no-parent --reject="index.html*"'
+wget_options='-q -r -nH -nd --no-parent --reject="index.html*"'
 wget_credentials=''
 
 cd ${workdir}
 
+echo "${wget} ${wget_options} ${wget_credentials} ${__store_url}/users/${__name}/ > /dev/null"
 ${wget} ${wget_options} ${wget_credentials} ${__store_url}/users/${__name}/ > /dev/null
 fn=$(basename -- "${__filename}")
 ext="${fn##*.}"
 fn="${fn%.*}"
+
+echo "{\"username\": \"${__mqtt_un}\", \"token\": \"${__mqtt_pw}\"}" > ".arena_mqtt_auth"
 
 test -d venv || ${virtualenv} -p ${python3} venv
 . venv/bin/activate
