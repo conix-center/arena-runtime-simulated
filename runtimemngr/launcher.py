@@ -79,14 +79,13 @@ class ModuleLaucher():
             raise Exception("We only support python files")
         #elif (module.filetype == FileType.WA):
         #    cmd.append(settings.s_dict['runtime']['wasm_launcher_path'])
-
         stdin_topic = rt_dbg_topic+'/stdin/'+module.uuid
         stdout_topic = rt_dbg_topic+'/stdout/'+module.uuid
 
         # start our variables with __ so they do not collide with module's variables
         env = {
                 '__mqtt_srv' : shlex.quote(Settings.s_dict['mqtt_server']['host']),
-                '__mqtt_prt' : shlex.quote(Settings.s_dict['mqtt_server']['port']),
+                '__mqtt_prt' : shlex.quote(str(Settings.s_dict['mqtt_server']['port'])),
                 '__mqtt_un' : shlex.quote(Settings.s_dict['mqtt_server']['username']),
                 '__mqtt_pw' : shlex.quote(Settings.s_dict['mqtt_server']['password']),
                 '__name': shlex.quote(module.name),
@@ -100,6 +99,7 @@ class ModuleLaucher():
                 '__env': shlex.quote(module.env),
                 '__done_topic': shlex.quote(rt_ctl_topic),
                 '__done_msg': shlex.quote(done_msg)}
+
 
         if (module.env.find(' ') != -1):
             for vstr in module.env.split(" "):
