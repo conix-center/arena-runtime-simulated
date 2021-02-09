@@ -26,7 +26,7 @@ then
 fi
 virtualenv=`which virtualenv`
 
-wget_options='-q -r -nH -nd --no-parent --reject="index.html*"'
+wget_options='-q -r -nH -nd --no-parent -e robots=off --reject="index.html*"'
 wget_credentials=''
 
 cd ${workdir}
